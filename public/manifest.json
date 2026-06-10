@@ -1,0 +1,21 @@
+{
+  "name": "ADDANI",
+  "short_name": "ADDANI",
+  "description": "Tienda online ADDANI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff7f7",
+  "theme_color": "#be123c",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
