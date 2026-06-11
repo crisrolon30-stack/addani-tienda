@@ -13,6 +13,7 @@ export default function MiCuentaPage() {
   const { customer, setCustomer, logout } = useCartStore();
 
   const [orderCount, setOrderCount] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ full_name: '', phone: '' });
@@ -30,11 +31,15 @@ export default function MiCuentaPage() {
 
   const loadStats = async () => {
     if (!customer) return;
-    const { count } = await supabase
-      .from('orders')
-      .select('id', { count: 'exact', head: true })
-      .eq('customer_id', customer.id);
-    setOrderCount(count || 0);
+    const ticketFilter = customer.dni
+      ? `customer_id.eq.${customer.id},customer_dni.eq.${customer.dni}`
+      : `customer_id.eq.${customer.id}`;
+    const [orders, tickets] = await Promise.all([
+      supabase.from('orders').select('id', { count: 'exact', head: true }).eq('customer_id', customer.id),
+      supabase.from('repair_tickets').select('id', { count: 'exact', head: true }).or(ticketFilter),
+    ]);
+    setOrderCount(orders.count || 0);
+    setTicketCount(tickets.count || 0);
     setLoading(false);
   };
 
@@ -102,7 +107,7 @@ export default function MiCuentaPage() {
             </div>
             <div className="min-w-0">
               <p className="font-serif text-xl font-bold text-rose-900 truncate">{customer.full_name}</p>
-              <p className="text-sm text-stone-500">DNI {customer.dni}</p>
+              {customer.dni && <p className="text-sm text-stone-500">DNI {customer.dni}</p>}
             </div>
           </div>
 
@@ -159,20 +164,39 @@ export default function MiCuentaPage() {
           )}
         </div>
 
-        <Link
-          href="/mis-pedidos"
-          className="block bg-white rounded-2xl border border-rose-100 shadow-elegant p-5 mb-4 hover:border-rose-300 transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-lg font-bold text-rose-900">Mis pedidos</p>
-              <p className="text-sm text-stone-500">
-                {loading ? 'Cargando...' : `${orderCount} ${orderCount === 1 ? 'pedido' : 'pedidos'}`}
-              </p>
+        <div className="grid sm:grid-cols-2 gap-3 mb-4">
+          <Link
+            href="/mis-pedidos"
+            className="block bg-white rounded-2xl border border-rose-100 shadow-elegant p-5 hover:border-rose-300 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-rose-700 font-bold tracking-widest uppercase mb-1">Boutique</p>
+                <p className="font-serif text-lg font-bold text-rose-900">Mis pedidos</p>
+                <p className="text-sm text-stone-500">
+                  {loading ? 'Cargando…' : `${orderCount} ${orderCount === 1 ? 'pedido' : 'pedidos'}`}
+                </p>
+              </div>
+              <span className="text-rose-400 text-xl">→</span>
             </div>
-            <span className="text-rose-400 text-xl">→</span>
-          </div>
-        </Link>
+          </Link>
+
+          <Link
+            href="/mis-reparaciones"
+            className="block bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-2xl border border-amber-500/30 shadow-elegant p-5 hover:border-amber-500/50 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-amber-400 font-bold tracking-widest uppercase mb-1">CLOUD</p>
+                <p className="font-bold text-white text-lg">Mis reparaciones</p>
+                <p className="text-sm text-zinc-400">
+                  {loading ? 'Cargando…' : `${ticketCount} ${ticketCount === 1 ? 'ticket' : 'tickets'}`}
+                </p>
+              </div>
+              <span className="text-amber-400 text-xl">→</span>
+            </div>
+          </Link>
+        </div>
 
         <button
           onClick={handleLogout}

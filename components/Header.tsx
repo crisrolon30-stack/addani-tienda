@@ -52,6 +52,10 @@ export default function Header() {
             <Link href="/contacto" className={`text-sm font-medium transition-colors ${pathname === '/contacto' ? 'text-rose-700' : 'text-stone-700 hover:text-rose-700'}`}>
               Contacto
             </Link>
+            <Link href="/servicio-tecnico" className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${pathname.startsWith('/servicio-tecnico') ? 'text-amber-600' : 'text-stone-700 hover:text-amber-600'}`}>
+              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+              Servicio Técnico
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -84,12 +88,16 @@ export default function Header() {
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 top-12 z-20 bg-white border border-rose-100 rounded-xl shadow-elegant-lg min-w-[180px] py-1 animate-fade-in">
+                    <div className="absolute right-0 top-12 z-20 bg-white border border-rose-100 rounded-xl shadow-elegant-lg min-w-[200px] py-1 animate-fade-in">
                       <Link href="/mi-cuenta" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">
                         Mi cuenta
                       </Link>
                       <Link href="/mis-pedidos" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">
                         Mis pedidos
+                      </Link>
+                      <Link href="/mis-reparaciones" onClick={() => setMenuOpen(false)} className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-amber-50">
+                        <span>Mis reparaciones</span>
+                        <span className="text-[9px] bg-amber-500/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">CLOUD</span>
                       </Link>
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2.5 text-sm text-rose-700 hover:bg-rose-50 border-t border-rose-100">
                         Cerrar sesión

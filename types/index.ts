@@ -29,7 +29,7 @@ export interface Category {
 
 export interface WebCustomer {
   id: string;
-  dni: string;
+  dni?: string;
   email?: string;
   full_name: string;
   phone?: string;
