@@ -445,68 +445,98 @@ export default function ServicioTecnicoPage() {
 function Hero({ config, onStart, hasBrands }: { config: Config; onStart: () => void; hasBrands: boolean }) {
   return (
     <section className="relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.15),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(239,68,68,0.08),transparent_50%)]"></div>
+      {/* Background ornamentado */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.18),transparent_55%),radial-gradient(circle_at_70%_80%,rgba(190,18,60,0.1),transparent_55%)]"></div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
+      {/* Patrón decorativo arriba */}
+      <svg className="absolute top-6 left-1/2 -translate-x-1/2 text-amber-400/30 w-32 h-4" viewBox="0 0 128 16" fill="none">
+        <path d="M0 8 Q 16 0, 32 8 T 64 8 T 96 8 T 128 8" stroke="currentColor" strokeWidth="1" fill="none"/>
+      </svg>
+
+      {/* Líneas radiales decorativas */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
+        <svg width="500" height="500" viewBox="0 0 500 500" fill="none" className="text-amber-400">
+          <circle cx="250" cy="250" r="240" stroke="currentColor" strokeWidth="0.5"/>
+          <circle cx="250" cy="250" r="180" stroke="currentColor" strokeWidth="0.5"/>
+          <circle cx="250" cy="250" r="120" stroke="currentColor" strokeWidth="0.5"/>
+          <circle cx="250" cy="250" r="60" stroke="currentColor" strokeWidth="0.5"/>
+        </svg>
+      </div>
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1 mb-5">
-              <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-              <span className="text-xs font-bold text-amber-400 tracking-widest uppercase">CLOUD · Servicio Técnico</span>
+            {/* Eyebrow ornamental */}
+            <div className="flex items-center gap-3 mb-6">
+              <span className="h-px w-12 bg-amber-400" />
+              <p className="font-display italic text-amber-300 text-sm tracking-[0.3em] uppercase">
+                Cloud · Servicio técnico
+              </p>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight">
-              {config.hero_title || (
-                <>
-                  Reparación{' '}
-                  <span className="text-amber-400">profesional</span>{' '}
-                  de celulares
-                </>
-              )}
+            {/* Título con tipografías mezcladas */}
+            <h1 className="leading-[0.95] tracking-tight">
+              <span className="block font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-amber-50">
+                Reparación
+              </span>
+              <span className="block font-display italic text-5xl sm:text-6xl lg:text-7xl font-light text-amber-300 mt-1">
+                profesional
+              </span>
+              <span className="block font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-amber-50 mt-1">
+                de celulares.
+              </span>
             </h1>
 
-            <p className="text-zinc-400 text-lg mt-5 leading-relaxed max-w-xl">
-              {config.hero_subtitle || 'Cotizá tu reparación en minutos. Diagnóstico sin cargo, garantía escrita y repuestos de calidad. Resistencia, Chaco.'}
+            <p className="font-sans text-amber-100/70 text-lg sm:text-xl mt-8 max-w-xl leading-relaxed text-balance">
+              {config.hero_subtitle || (
+                <>
+                  Cotizá en minutos.
+                  <span className="font-display italic text-amber-300"> Diagnóstico sin cargo</span>, garantía escrita y repuestos de calidad.
+                </>
+              )}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-10 flex flex-wrap gap-3">
               {hasBrands && (
                 <button onClick={onStart}
-                  className="bg-amber-400 hover:bg-amber-300 text-black px-6 py-3.5 rounded-xl font-bold transition-all hover:-translate-y-0.5 shadow-lg shadow-amber-500/20 inline-flex items-center gap-2">
-                  Cotizar mi reparación
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+                  className="group inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-stone-900 px-8 py-4 rounded-sm font-semibold tracking-wide text-sm uppercase shadow-2xl shadow-amber-500/20 transition-all">
+                  <span>Cotizar mi equipo</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
                 </button>
               )}
               <a href={`https://wa.me/${(config.whatsapp_number || '5493624522965').replace(/\D/g, '')}`} target="_blank"
-                className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white px-6 py-3.5 rounded-xl font-bold transition-colors inline-flex items-center gap-2">
-                <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z" /></svg>
-                WhatsApp directo
+                className="group inline-flex items-center gap-2 bg-stone-900/60 hover:bg-stone-800 border border-amber-700/40 text-amber-100 px-8 py-4 rounded-sm font-medium tracking-wide text-sm uppercase transition-all backdrop-blur-sm">
+                <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654z" />
+                </svg>
+                <span>WhatsApp directo</span>
               </a>
             </div>
 
-            {/* Stats row */}
+            {/* Stats con tipografía editorial */}
             {(config.years_experience || config.repairs_count || config.rating_overall) && (
-              <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
+              <div className="mt-14 grid grid-cols-3 gap-6 max-w-md border-t border-amber-700/30 pt-8">
                 {config.years_experience && (
                   <div>
-                    <p className="text-3xl font-black text-amber-400">{config.years_experience}+</p>
-                    <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-bold">Años</p>
+                    <p className="font-serif text-4xl font-bold text-amber-300 leading-none">{config.years_experience}<span className="text-amber-400/60 text-2xl">+</span></p>
+                    <p className="font-display italic text-[11px] text-amber-100/60 uppercase tracking-widest mt-1.5">Años</p>
                   </div>
                 )}
                 {config.repairs_count && (
                   <div>
-                    <p className="text-3xl font-black text-amber-400">{config.repairs_count}+</p>
-                    <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-bold">Reparaciones</p>
+                    <p className="font-serif text-4xl font-bold text-amber-300 leading-none">{config.repairs_count}<span className="text-amber-400/60 text-2xl">+</span></p>
+                    <p className="font-display italic text-[11px] text-amber-100/60 uppercase tracking-widest mt-1.5">Reparaciones</p>
                   </div>
                 )}
                 {config.rating_overall && (
                   <div>
-                    <p className="text-3xl font-black text-amber-400 flex items-baseline gap-1">
+                    <p className="font-serif text-4xl font-bold text-amber-300 leading-none flex items-baseline gap-1">
                       {config.rating_overall}
-                      <span className="text-base text-amber-400">★</span>
+                      <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                     </p>
-                    <p className="text-[11px] text-zinc-500 uppercase tracking-wider font-bold">
+                    <p className="font-display italic text-[11px] text-amber-100/60 uppercase tracking-widest mt-1.5">
                       {config.rating_count ? `${config.rating_count} reseñas` : 'Calificación'}
                     </p>
                   </div>
@@ -515,21 +545,41 @@ function Hero({ config, onStart, hasBrands }: { config: Config; onStart: () => v
             )}
           </div>
 
-          {/* Imagen del local */}
+          {/* Lado derecho: card de marca / imagen del local */}
           {config.local_image_url ? (
             <div className="relative">
-              <div className="absolute -inset-3 bg-gradient-to-br from-amber-500/20 to-rose-500/10 rounded-3xl blur-xl"></div>
-              <img src={config.local_image_url} alt="Local CLOUD"
-                className="relative w-full aspect-[4/3] object-cover rounded-2xl border border-amber-500/20 shadow-2xl" />
+              <div className="absolute -inset-3 bg-gradient-to-br from-amber-500/30 to-rose-700/20 rounded-3xl blur-2xl"></div>
+              <img src={config.local_image_url} alt="Local"
+                className="relative w-full aspect-[4/3] object-cover rounded-2xl border border-amber-500/30 shadow-elegant-xl" />
             </div>
           ) : (
-            <div className="relative aspect-[4/3] bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden hidden lg:block">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center mb-4">
-                    <WrenchIcon className="w-12 h-12 text-amber-400" />
-                  </div>
-                  <p className="text-zinc-500 text-sm">Tu equipo en manos expertas</p>
+            <div className="relative hidden lg:block">
+              <div className="absolute -inset-4 bg-gradient-to-br from-amber-500/20 to-rose-700/10 rounded-3xl blur-2xl opacity-50"></div>
+              <div className="relative bg-gradient-to-br from-stone-800/60 to-amber-950/40 backdrop-blur-sm border border-amber-700/30 rounded-2xl p-10 shadow-elegant-xl">
+                {/* Composición editorial */}
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="h-px w-8 bg-amber-400" />
+                  <p className="font-display italic text-amber-300 text-xs tracking-[0.3em] uppercase">Compromiso</p>
+                </div>
+                <h3 className="font-serif text-3xl text-amber-50 leading-tight mb-2">
+                  Tu equipo en<br />
+                  <span className="font-display italic text-amber-300">manos expertas.</span>
+                </h3>
+                <p className="font-sans text-amber-100/60 text-sm mb-8 leading-relaxed">
+                  Cada reparación pasa por un proceso de inspección, diagnóstico y prueba antes de entregarse.
+                </p>
+
+                {/* 3 valores en grid editorial */}
+                <div className="grid grid-cols-3 gap-4 border-t border-amber-700/20 pt-6">
+                  <ValueMini label="Diagnóstico" icon={
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  } />
+                  <ValueMini label="Garantía" icon={
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                  } />
+                  <ValueMini label="Calidad" icon={
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068A3.745 3.745 0 0 1 5.636 5.636a3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"/></svg>
+                  } />
                 </div>
               </div>
             </div>
@@ -537,6 +587,17 @@ function Hero({ config, onStart, hasBrands }: { config: Config; onStart: () => v
         </div>
       </div>
     </section>
+  );
+}
+
+function ValueMini({ label, icon }: { label: string; icon: React.ReactNode }) {
+  return (
+    <div className="text-center">
+      <div className="w-10 h-10 mx-auto rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-2">
+        {icon}
+      </div>
+      <p className="font-display italic text-amber-100/80 text-xs tracking-wider">{label}</p>
+    </div>
   );
 }
 
