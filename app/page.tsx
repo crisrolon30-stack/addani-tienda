@@ -4,11 +4,27 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 async function getFeaturedProducts() {
-  const { data } = await supabase
+  // Primero busca los marcados como destacados
+  const { data: featured } = await supabase
+    .from('products').select('*')
+    .eq('active', true).eq('show_online', true).eq('featured', true).gt('stock', 0)
+    .order('created_at', { ascending: false }).limit(8);
+
+  if (featured && featured.length >= 4) return featured;
+
+  // Fallback: completa con los últimos cargados si no hay suficientes destacados
+  const { data: latest } = await supabase
     .from('products').select('*')
     .eq('active', true).eq('show_online', true).gt('stock', 0)
     .order('created_at', { ascending: false }).limit(8);
-  return data || [];
+
+  // Si hay algunos featured, los muestra primero + completa con latest
+  if (featured && featured.length > 0) {
+    const featuredIds = new Set(featured.map(p => p.id));
+    const rest = (latest || []).filter(p => !featuredIds.has(p.id)).slice(0, 8 - featured.length);
+    return [...featured, ...rest];
+  }
+  return latest || [];
 }
 
 async function getCategories() {

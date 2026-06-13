@@ -4,6 +4,7 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import PushSubscribe from '@/components/PushSubscribe';
 
 type PageProps = { params: Promise<{ code: string }> };
 
@@ -98,6 +99,12 @@ function TicketView({ ticket }: { ticket: any }) {
             <p className="font-serif text-xl font-bold">{st.label}</p>
             <p className="text-sm mt-1 opacity-80">{st.description}</p>
           </div>
+        </div>
+
+        {/* Activador de notificaciones push */}
+        <PushSubscribe ticketCode={ticket.ticket_code} customerPhone={ticket.customer_phone} />
+
+        <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden border border-stone-200 mt-4">
 
           {/* Datos del equipo y cliente */}
           <div className="p-5 space-y-4">

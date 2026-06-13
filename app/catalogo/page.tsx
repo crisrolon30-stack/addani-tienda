@@ -20,7 +20,9 @@ function CatalogoContent() {
 
   useEffect(() => {
     const cat = searchParams.get('categoria');
+    const q = searchParams.get('q');
     if (cat) setActiveCat(cat);
+    if (q) setSearch(q);
     loadData();
   }, []);
 

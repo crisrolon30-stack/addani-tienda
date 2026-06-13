@@ -1,9 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCartStore } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
+
+type SearchResult = {
+  id: string;
+  name: string;
+  brand?: string;
+  sale_price: number;
+  stock: number;
+  images?: string[];
+};
 
 export default function Header() {
   const router = useRouter();
@@ -13,21 +23,59 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
 
+  // Buscador
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => setMounted(true), []);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      const term = searchTerm.toLowerCase().trim();
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, brand, sale_price, stock, images')
+        .eq('active', true).eq('show_online', true).gt('stock', 0)
+        .or(`name.ilike.%${term}%,brand.ilike.%${term}%`)
+        .limit(6);
+      setSearchResults(data || []);
+      setSearching(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const itemCount = mounted ? getItemCount() : 0;
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
+  const openSearch = () => {
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
   };
+
+  const goToSearch = () => {
+    if (searchTerm.trim()) {
+      setSearchOpen(false);
+      router.push(`/catalogo?q=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm('');
+    }
+  };
+
+  const handleLogout = () => { logout(); router.push('/'); };
 
   return (
     <>
       <header className="sticky top-0 z-40 glass border-b border-rose-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          
-          <Link href="/" className="flex items-center gap-2.5 group">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+
+          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
             <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-rose-700 rounded-xl flex items-center justify-center shadow-elegant group-hover:scale-105 transition-transform">
               <span className="text-white font-serif font-bold text-lg">A</span>
             </div>
@@ -37,20 +85,22 @@ export default function Header() {
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7">
-            <Link href="/" className={`text-sm font-medium transition-colors ${pathname === '/' ? 'text-rose-700' : 'text-stone-700 hover:text-rose-700'}`}>
-              Inicio
-            </Link>
+          {/* Buscador centrado (desktop) */}
+          <div className="hidden md:flex flex-1 max-w-md">
+            <button
+              onClick={openSearch}
+              className="w-full flex items-center gap-2.5 px-4 py-2 bg-rose-50/60 hover:bg-rose-50 border border-rose-200 rounded-full text-sm text-stone-500 transition-colors"
+            >
+              <svg className="w-4 h-4 text-rose-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+              <span className="font-medium">¿Qué buscás hoy?</span>
+            </button>
+          </div>
+
+          <nav className="hidden lg:flex items-center gap-5 flex-shrink-0">
             <Link href="/catalogo" className={`text-sm font-medium transition-colors ${pathname.startsWith('/catalogo') ? 'text-rose-700' : 'text-stone-700 hover:text-rose-700'}`}>
               Catálogo
-            </Link>
-            {customer && (
-              <Link href="/mis-pedidos" className={`text-sm font-medium transition-colors ${pathname === '/mis-pedidos' ? 'text-rose-700' : 'text-stone-700 hover:text-rose-700'}`}>
-                Mis pedidos
-              </Link>
-            )}
-            <Link href="/contacto" className={`text-sm font-medium transition-colors ${pathname === '/contacto' ? 'text-rose-700' : 'text-stone-700 hover:text-rose-700'}`}>
-              Contacto
             </Link>
             <Link href="/servicio-tecnico" className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${pathname.startsWith('/servicio-tecnico') ? 'text-amber-600' : 'text-stone-700 hover:text-amber-600'}`}>
               <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
@@ -58,8 +108,19 @@ export default function Header() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2">
-            
+          <div className="flex items-center gap-1 flex-shrink-0">
+
+            {/* Buscador móvil (solo ícono) */}
+            <button
+              onClick={openSearch}
+              className="md:hidden p-2.5 hover:bg-rose-50 rounded-xl transition-colors"
+              aria-label="Buscar"
+            >
+              <svg className="w-5 h-5 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </button>
+
             <button
               onClick={() => setShowCart(true)}
               className="relative p-2.5 hover:bg-rose-50 rounded-xl transition-colors"
@@ -77,7 +138,7 @@ export default function Header() {
 
             {customer ? (
               <div className="relative">
-                <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 p-1.5 pr-3 hover:bg-rose-50 rounded-xl transition-colors">
+                <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 p-1.5 sm:pr-3 hover:bg-rose-50 rounded-xl transition-colors">
                   <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-rose-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                     {customer.full_name.charAt(0).toUpperCase()}
                   </div>
@@ -89,12 +150,8 @@ export default function Header() {
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                     <div className="absolute right-0 top-12 z-20 bg-white border border-rose-100 rounded-xl shadow-elegant-lg min-w-[200px] py-1 animate-fade-in">
-                      <Link href="/mi-cuenta" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">
-                        Mi cuenta
-                      </Link>
-                      <Link href="/mis-pedidos" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">
-                        Mis pedidos
-                      </Link>
+                      <Link href="/mi-cuenta" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">Mi cuenta</Link>
+                      <Link href="/mis-pedidos" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 text-sm text-stone-700 hover:bg-rose-50">Mis pedidos</Link>
                       <Link href="/mis-reparaciones" onClick={() => setMenuOpen(false)} className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-amber-50">
                         <span>Mis reparaciones</span>
                         <span className="text-[9px] bg-amber-500/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">CLOUD</span>
@@ -107,7 +164,7 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-elegant transition-colors">
+              <Link href="/login" className="bg-rose-600 hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-elegant transition-colors">
                 Ingresar
               </Link>
             )}
@@ -115,22 +172,129 @@ export default function Header() {
         </div>
       </header>
 
+      {/* Search overlay */}
+      {searchOpen && (
+        <SearchOverlay
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          results={searchResults}
+          searching={searching}
+          inputRef={searchInputRef}
+          onClose={() => { setSearchOpen(false); setSearchTerm(''); }}
+          onSubmit={goToSearch}
+        />
+      )}
+
       {showCart && <CartDrawer onClose={() => setShowCart(false)} />}
     </>
   );
 }
 
+// === SEARCH OVERLAY ===
+function SearchOverlay({ searchTerm, setSearchTerm, results, searching, inputRef, onClose, onSubmit }: any) {
+  const router = useRouter();
+
+  return (
+    <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="bg-white shadow-elegant-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-rose-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+              placeholder="Buscar maquillaje, bijouterie, ropa interior, perfumes…"
+              className="flex-1 bg-transparent outline-none text-base sm:text-lg text-stone-900 placeholder:text-stone-400"
+            />
+            <button onClick={onClose} className="p-1.5 hover:bg-rose-50 rounded-lg flex-shrink-0">
+              <svg className="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Resultados */}
+        {searchTerm.trim().length >= 2 && (
+          <div className="border-t border-rose-100 max-h-[60vh] overflow-y-auto">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2">
+              {searching ? (
+                <p className="text-sm text-stone-500 py-6 text-center">Buscando…</p>
+              ) : results.length === 0 ? (
+                <p className="text-sm text-stone-500 py-6 text-center">Sin resultados para "{searchTerm}"</p>
+              ) : (
+                <>
+                  {results.map((p: SearchResult) => (
+                    <Link
+                      key={p.id}
+                      href={`/producto/${p.id}`}
+                      onClick={onClose}
+                      className="flex items-center gap-3 py-2.5 px-2 hover:bg-rose-50 rounded-lg transition-colors"
+                    >
+                      <div className="w-12 h-12 bg-rose-50 rounded-lg overflow-hidden flex-shrink-0 border border-rose-100">
+                        {p.images?.[0] ? (
+                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-rose-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/></svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {p.brand && <p className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">{p.brand}</p>}
+                        <p className="font-serif text-sm text-stone-900 truncate">{p.name}</p>
+                      </div>
+                      <p className="font-bold text-rose-900 text-sm flex-shrink-0">${p.sale_price.toLocaleString('es-AR')}</p>
+                    </Link>
+                  ))}
+                  <button
+                    onClick={onSubmit}
+                    className="block w-full text-center py-3 text-sm font-medium text-rose-700 hover:bg-rose-50 rounded-lg mt-1"
+                  >
+                    Ver todos los resultados →
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Sugerencias cuando aún no escribió */}
+        {searchTerm.trim().length < 2 && (
+          <div className="border-t border-rose-100">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+              <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-3">Categorías populares</p>
+              <div className="flex flex-wrap gap-2">
+                {['Maquillaje', 'Bijouterie', 'Perfumes', 'Ropa interior', 'Accesorios'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { onClose(); router.push(`/catalogo?q=${encodeURIComponent(cat)}`); }}
+                    className="px-4 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-full text-sm text-rose-900 font-medium transition-colors"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// === CART DRAWER ===
 function CartDrawer({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { items, updateQuantity, removeItem, getTotal, customer } = useCartStore();
+  const { items, updateQuantity, removeItem, getTotal } = useCartStore();
   const total = getTotal();
 
   const handleCheckout = () => {
-    if (!customer) {
-      onClose();
-      router.push('/login?redirect=/checkout');
-      return;
-    }
     onClose();
     router.push('/checkout');
   };
@@ -139,7 +303,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-white shadow-elegant-xl flex flex-col animate-slide-in-right">
-        
+
         <div className="px-5 py-4 border-b border-rose-100 flex items-center justify-between">
           <h2 className="font-serif text-2xl font-bold text-rose-900">Mi carrito</h2>
           <button onClick={onClose} className="p-2 hover:bg-rose-50 rounded-lg">
@@ -171,9 +335,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                       <img src={item.product_image} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-rose-200">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                        </svg>
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/></svg>
                       </div>
                     )}
                   </div>
@@ -190,9 +352,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                     </div>
                   </div>
                   <button onClick={() => removeItem(item.product_id)} className="text-stone-400 hover:text-rose-600 p-1 self-start">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
               ))}
@@ -201,9 +361,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
             <div className="border-t border-rose-100 p-5 space-y-3">
               <div className="flex justify-between items-baseline">
                 <span className="text-stone-700 font-medium">Total</span>
-                <span className="font-serif text-3xl font-bold text-rose-900">
-                  ${total.toLocaleString('es-AR')}
-                </span>
+                <span className="font-serif text-3xl font-bold text-rose-900">${total.toLocaleString('es-AR')}</span>
               </div>
               <button
                 onClick={handleCheckout}
@@ -211,11 +369,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
               >
                 Continuar compra →
               </button>
-              <Link
-                href="/catalogo"
-                onClick={onClose}
-                className="block text-center text-sm text-stone-600 hover:text-rose-700 py-1"
-              >
+              <Link href="/catalogo" onClick={onClose} className="block text-center text-sm text-stone-600 hover:text-rose-700 py-1">
                 Seguir comprando
               </Link>
             </div>
