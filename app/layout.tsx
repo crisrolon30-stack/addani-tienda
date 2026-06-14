@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter, Cormorant_Garamond } from 'next/font/google';
 import "./globals.css";
+import MobileBottomBar from '@/components/MobileBottomBar';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-sans min-h-screen antialiased">
         {children}
+        <MobileBottomBar />
       </body>
     </html>
   );

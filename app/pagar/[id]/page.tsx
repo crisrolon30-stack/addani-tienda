@@ -20,12 +20,8 @@ export default function PagarPage() {
   const [whatsappClicked, setWhatsappClicked] = useState(false);
 
   useEffect(() => {
-    if (!customer) {
-      router.push('/login');
-      return;
-    }
     loadData();
-  }, [customer]);
+  }, [params.id]);
 
   const loadData = async () => {
     const [orderResult, configResult] = await Promise.all([
@@ -33,7 +29,13 @@ export default function PagarPage() {
       supabase.from('web_config').select('*').limit(1).maybeSingle(),
     ]);
 
-    if (!orderResult.data || orderResult.data.customer_id !== customer?.id) {
+    if (!orderResult.data) {
+      router.push('/');
+      return;
+    }
+
+    // Si está logueado, verificamos que sea suyo. Si es invitado (customer_id null), dejamos pasar.
+    if (orderResult.data.customer_id && customer && orderResult.data.customer_id !== customer.id) {
       router.push('/mis-pedidos');
       return;
     }
@@ -90,7 +92,7 @@ export default function PagarPage() {
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     
     setWhatsappClicked(true);
-    setTimeout(() => router.push(`/mis-pedidos/${order.id}`), 2000);
+    setTimeout(() => router.push(`/confirmacion/${order.id}`), 2000);
   };
 
   if (loading || !order) {

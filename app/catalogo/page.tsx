@@ -209,16 +209,20 @@ function CatalogoContent() {
                   <div className="px-4 pb-4">
                     <button
                       onClick={(e) => handleAdd(e, product)}
-                      disabled={outOfStock || justAdded}
+                      disabled={outOfStock || justAdded || qty >= product.stock}
                       className={`w-full py-2.5 rounded-sm font-medium text-[11px] uppercase tracking-widest transition-all ${
-                        outOfStock
+                        outOfStock || qty >= product.stock
                           ? 'bg-stone-100 text-stone-400 cursor-not-allowed'
                           : justAdded
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : 'bg-white text-rose-900 border border-rose-300 hover:bg-rose-900 hover:text-white hover:border-rose-900'
                       }`}
                     >
-                      {outOfStock ? 'No disponible' : justAdded ? '✓ Agregado' : 'Agregar'}
+                      {outOfStock
+                        ? 'No disponible'
+                        : qty >= product.stock
+                        ? 'Stock máx en carrito'
+                        : justAdded ? '✓ Agregado' : 'Agregar'}
                     </button>
                   </div>
                 </div>

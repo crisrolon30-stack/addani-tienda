@@ -26,8 +26,8 @@ export default function Footer() {
             <div className="space-y-2">
               <Link href="/" className="block text-sm text-stone-600 hover:text-rose-700">Inicio</Link>
               <Link href="/catalogo" className="block text-sm text-stone-600 hover:text-rose-700">Catálogo</Link>
+              <Link href="/servicio-tecnico" className="block text-sm text-stone-600 hover:text-rose-700">Servicio Técnico</Link>
               <Link href="/contacto" className="block text-sm text-stone-600 hover:text-rose-700">Contacto</Link>
-              <Link href="/terminos" className="block text-sm text-stone-600 hover:text-rose-700">Términos y condiciones</Link>
             </div>
           </div>
 

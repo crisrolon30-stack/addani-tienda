@@ -213,24 +213,28 @@ export default function ProductoDetallePage() {
                     </button>
                     <span className="font-bold text-stone-900 w-10 text-center">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
-                      className="w-9 h-9 bg-white border border-rose-200 rounded-lg text-rose-700 font-bold hover:bg-rose-50"
+                      onClick={() => setQuantity(q => Math.min(product.stock - inCart, q + 1))}
+                      disabled={quantity >= product.stock - inCart}
+                      className="w-9 h-9 bg-white border border-rose-200 rounded-lg text-rose-700 font-bold hover:bg-rose-50 disabled:opacity-40"
                     >
                       +
                     </button>
                   </div>
+                  {quantity >= product.stock - inCart && inCart > 0 && (
+                    <span className="text-[10px] text-amber-700 font-medium">Stock máx alcanzado</span>
+                  )}
                 </div>
 
                 <button
                   onClick={handleAdd}
-                  disabled={added}
-                  className={`w-full py-4 rounded-xl font-bold shadow-elegant-lg transition-all ${
+                  disabled={added || product.stock - inCart <= 0}
+                  className={`w-full py-4 rounded-xl font-bold shadow-elegant-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     added
                       ? 'bg-emerald-600 text-white'
                       : 'bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white'
                   }`}
                 >
-                  {added ? '✓ Agregado al carrito' : 'Agregar al carrito'}
+                  {added ? '✓ Agregado al carrito' : product.stock - inCart <= 0 ? 'Ya tenés todo el stock' : 'Agregar al carrito'}
                 </button>
               </div>
             )}

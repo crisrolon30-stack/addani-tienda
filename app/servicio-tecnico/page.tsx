@@ -101,10 +101,10 @@ export default function ServicioTecnicoPage() {
   const pickModel = (m: Model) => { setModel(m); setService(null); setVariant(null); setStep('service'); };
   const pickService = (s: Service) => {
     setService(s);
-    const sv = variants.filter(v => v.service_id === s.id);
     setVariant(null);
-    if (sv.length === 1) { setVariant(sv[0]); setStep('summary'); }
-    else setStep('variant');
+    // Siempre mostrar el paso de calidad, aunque tenga una sola opción.
+    // El cliente debe ver y confirmar qué calidad va a usar.
+    setStep('variant');
   };
   const pickVariant = (v: Variant) => { setVariant(v); setStep('summary'); };
 
@@ -113,11 +113,7 @@ export default function ServicioTecnicoPage() {
     else if (step === 'model') { setStep('brand'); setBrand(null); }
     else if (step === 'service') { setStep('model'); setModel(null); }
     else if (step === 'variant') { setStep('service'); setService(null); }
-    else if (step === 'summary') {
-      const sv = service ? variants.filter(v => v.service_id === service.id) : [];
-      if (sv.length === 1) { setStep('service'); setService(null); setVariant(null); }
-      else { setStep('variant'); setVariant(null); }
-    }
+    else if (step === 'summary') { setStep('variant'); setVariant(null); }
   };
 
   const submitTicket = async () => {
@@ -147,7 +143,6 @@ export default function ServicioTecnicoPage() {
         service_type: service.service_type,
         variant_label: variant.label,
         agreed_price: finalPrice,
-        estimated_time: service.estimated_time,
         warranty: service.warranty,
         customer_notes: notes || null,
         source: 'web',

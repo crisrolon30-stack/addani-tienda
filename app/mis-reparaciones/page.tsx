@@ -202,7 +202,6 @@ function TicketDetailModal({ ticket, history, onClose }: { ticket: Ticket; histo
               <SummaryRow label="Equipo" value={`${ticket.brand_name} ${ticket.model_name}`} />
               <SummaryRow label="Servicio" value={ticket.service_type} />
               <SummaryRow label="Calidad" value={ticket.variant_label} />
-              {ticket.estimated_time && <SummaryRow label="Demora estimada" value={ticket.estimated_time} />}
               {ticket.warranty && <SummaryRow label="Garantía" value={ticket.warranty} />}
               <SummaryRow label="Precio" value={`$${Number(ticket.agreed_price).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`} highlight />
             </div>
