@@ -298,14 +298,28 @@ export default function ServicioTecnicoPage() {
 
               {step === 'variant' && service && (
                 <Section title="Elegí la calidad del repuesto">
+                  {serviceVariants.length === 1 && (
+                    <p className="text-xs text-amber-400/80 mb-3 flex items-center gap-1.5">
+                      <span>ℹ️</span>
+                      <span>Para este modelo trabajamos con una única calidad de repuesto.</span>
+                    </p>
+                  )}
                   <div className="space-y-2">
                     {serviceVariants.map(v => {
                       const price = v.cost_price * (1 + v.markup_percent / 100);
+                      const isConsultar = v.label?.toLowerCase().includes('consultar');
                       return (
                         <button key={v.id} onClick={() => pickVariant(v)}
                           className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 rounded-2xl p-4 text-left transition-all flex items-center justify-between gap-3">
-                          <p className="font-bold">{v.label}</p>
-                          <p className="text-2xl font-bold text-amber-400">${price.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</p>
+                          <div className="min-w-0">
+                            <p className="font-bold">{isConsultar ? 'Cotización personalizada' : v.label}</p>
+                            {isConsultar && (
+                              <p className="text-[11px] text-zinc-400 mt-1">Te enviamos el presupuesto exacto por WhatsApp</p>
+                            )}
+                          </div>
+                          <p className={`text-2xl font-bold flex-shrink-0 ${isConsultar ? 'text-zinc-400 text-sm' : 'text-amber-400'}`}>
+                            {isConsultar ? 'A consultar' : `$${price.toLocaleString('es-AR', { maximumFractionDigits: 0 })}`}
+                          </p>
                         </button>
                       );
                     })}

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+﻿import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 async function getFeaturedProducts() {
   // Primero busca los marcados como destacados
   const { data: featured } = await supabase
-    .from('products').select('*')
+    .from('products').select('id, name, description, brand, category_id, barcode, sale_price, stock, min_stock, images, active, created_at, updated_at, tag, show_online, online_description, featured, online_gallery, variants, has_variants, quantity_offers, deleted_at, deleted_reason')
     .eq('active', true).eq('show_online', true).eq('featured', true).gt('stock', 0)
     .order('created_at', { ascending: false }).limit(8);
 
@@ -14,7 +14,7 @@ async function getFeaturedProducts() {
 
   // Fallback: completa con los últimos cargados si no hay suficientes destacados
   const { data: latest } = await supabase
-    .from('products').select('*')
+    .from('products').select('id, name, description, brand, category_id, barcode, sale_price, stock, min_stock, images, active, created_at, updated_at, tag, show_online, online_description, featured, online_gallery, variants, has_variants, quantity_offers, deleted_at, deleted_reason')
     .eq('active', true).eq('show_online', true).gt('stock', 0)
     .order('created_at', { ascending: false }).limit(8);
 
@@ -110,10 +110,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="font-sans text-lg md:text-xl text-stone-700 mt-8 max-w-xl leading-relaxed text-balance">
-              Maquillaje, bijouterie, perfumes, ropa interior y mucho más.
-              {hasRepairService && (
-                <> Y ahora también <span className="font-display italic text-amber-800 font-semibold">servicio técnico de celulares</span>.</>
-              )}
+              Maquillaje, bijouterie, perfumes, ropa interior, papelería y mucho más. Todo lo que necesitás, con la atención de siempre.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-10">
@@ -122,14 +119,6 @@ export default async function HomePage() {
                 <span>Explorar catálogo</span>
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 5l7 7-7 7"/></svg>
               </Link>
-
-              {hasRepairService && (
-                <Link href="/servicio-tecnico"
-                  className="group inline-flex items-center gap-2 bg-white hover:bg-amber-50 text-amber-900 border border-amber-700/40 px-8 py-4 rounded-sm font-medium tracking-wide text-sm uppercase shadow-soft transition-all">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63"/></svg>
-                  <span>Servicio técnico</span>
-                </Link>
-              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mt-12 pt-8 border-t border-rose-200/60">

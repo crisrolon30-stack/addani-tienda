@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useCartStore } from '@/lib/store';
+import { priceItem, bestOfferText } from '@/lib/pricing';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -29,7 +30,7 @@ export default function ProductoDetallePage() {
     setLoading(true);
     const { data } = await supabase
       .from('products')
-      .select('*')
+      .select('id, name, description, brand, category_id, barcode, sale_price, stock, min_stock, images, active, created_at, updated_at, tag, show_online, online_description, featured, online_gallery, variants, has_variants, quantity_offers, deleted_at, deleted_reason')
       .eq('id', params.id)
       .eq('active', true)
       .maybeSingle();
@@ -46,7 +47,7 @@ export default function ProductoDetallePage() {
     if (data.category_id) {
       const [catResult, relResult] = await Promise.all([
         supabase.from('categories').select('*').eq('id', data.category_id).maybeSingle(),
-        supabase.from('products').select('*')
+        supabase.from('products').select('id, name, description, brand, category_id, barcode, sale_price, stock, min_stock, images, active, created_at, updated_at, tag, show_online, online_description, featured, online_gallery, variants, has_variants, quantity_offers, deleted_at, deleted_reason')
           .eq('category_id', data.category_id)
           .eq('active', true)
           .eq('show_online', true)
@@ -70,7 +71,9 @@ export default function ProductoDetallePage() {
       unit_price: product.sale_price,
       subtotal: product.sale_price * quantity,
       category_id: product.category_id,
-    });
+      quantity_offers: product.quantity_offers || [],
+      base_unit_price: product.sale_price,
+    } as any);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -99,12 +102,12 @@ export default function ProductoDetallePage() {
         <Header />
         <div className="max-w-3xl mx-auto px-4 py-20 text-center">
           <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🔍</span>
+            <span className="text-3xl">ðŸ”</span>
           </div>
           <h1 className="font-serif text-2xl font-bold text-rose-900 mb-2">Producto no encontrado</h1>
-          <p className="text-stone-600 mb-6">Puede que ya no esté disponible.</p>
+          <p className="text-stone-600 mb-6">Puede que ya no estÃ© disponible.</p>
           <Link href="/catalogo" className="inline-block bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-xl font-semibold">
-            Volver al catálogo
+            Volver al catÃ¡logo
           </Link>
         </div>
         <Footer />
@@ -124,7 +127,7 @@ export default function ProductoDetallePage() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
 
         <div className="flex items-center gap-2 text-sm text-stone-500 mb-5">
-          <Link href="/catalogo" className="hover:text-rose-700">Catálogo</Link>
+          <Link href="/catalogo" className="hover:text-rose-700">CatÃ¡logo</Link>
           {category && (
             <>
               <span>/</span>
@@ -135,13 +138,13 @@ export default function ProductoDetallePage() {
 
         <div className="grid md:grid-cols-2 gap-8">
 
-          {/* Galería */}
+          {/* GalerÃ­a */}
           <div>
             <div className="aspect-square bg-rose-50 rounded-2xl overflow-hidden border border-rose-100">
               {gallery[activeImage] ? (
                 <img src={gallery[activeImage]} alt={product.name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-7xl text-rose-200">📦</div>
+                <div className="w-full h-full flex items-center justify-center text-7xl text-rose-200">ðŸ“¦</div>
               )}
             </div>
             {gallery.length > 1 && (
@@ -172,6 +175,36 @@ export default function ProductoDetallePage() {
               ${Number(product.sale_price).toLocaleString('es-AR')}
             </p>
 
+            {/* Ofertas activas + precio efectivo segÃºn cantidad seleccionada */}
+            {product.quantity_offers && product.quantity_offers.length > 0 && (() => {
+              const priced = priceItem(product.sale_price, quantity, product.quantity_offers);
+              const showSavings = priced.saved > 0;
+              return (
+                <div className="mt-3 bg-gradient-to-br from-amber-50 to-rose-50 border-2 border-amber-300 rounded-xl p-3.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-800 mb-2">ðŸ·ï¸ Ofertas disponibles</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.quantity_offers.map((o: any, idx: number) => (
+                      <span
+                        key={idx}
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                          quantity >= o.min_qty
+                            ? 'bg-amber-500 text-white border-amber-600'
+                            : 'bg-white text-amber-900 border-amber-300'
+                        }`}
+                      >
+                        {o.min_qty} Ã— ${o.price_total.toLocaleString('es-AR')}
+                      </span>
+                    ))}
+                  </div>
+                  {showSavings && (
+                    <p className="text-xs text-emerald-700 font-bold mt-2">
+                      âœ“ Llevando {quantity} pagÃ¡s ${priced.subtotal.toLocaleString('es-AR')} Â· Te ahorrÃ¡s ${priced.saved.toLocaleString('es-AR')}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="mt-3">
               {outOfStock ? (
                 <span className="inline-block bg-stone-100 text-stone-500 text-sm font-semibold px-3 py-1 rounded-full">
@@ -179,7 +212,7 @@ export default function ProductoDetallePage() {
                 </span>
               ) : product.stock <= 5 ? (
                 <span className="inline-block bg-amber-50 text-amber-700 border border-amber-200 text-sm font-semibold px-3 py-1 rounded-full">
-                  ¡Últimas {product.stock} unidades!
+                  Â¡Ãšltimas {product.stock} unidades!
                 </span>
               ) : (
                 <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-semibold px-3 py-1 rounded-full">
@@ -196,7 +229,7 @@ export default function ProductoDetallePage() {
 
             {inCart > 0 && (
               <p className="mt-4 text-sm text-rose-700 font-medium">
-                Ya tenés {inCart} en el carrito
+                Ya tenÃ©s {inCart} en el carrito
               </p>
             )}
 
@@ -209,7 +242,7 @@ export default function ProductoDetallePage() {
                       onClick={() => setQuantity(q => Math.max(1, q - 1))}
                       className="w-9 h-9 bg-white border border-rose-200 rounded-lg text-rose-700 font-bold hover:bg-rose-50"
                     >
-                      −
+                      âˆ’
                     </button>
                     <span className="font-bold text-stone-900 w-10 text-center">{quantity}</span>
                     <button
@@ -221,7 +254,7 @@ export default function ProductoDetallePage() {
                     </button>
                   </div>
                   {quantity >= product.stock - inCart && inCart > 0 && (
-                    <span className="text-[10px] text-amber-700 font-medium">Stock máx alcanzado</span>
+                    <span className="text-[10px] text-amber-700 font-medium">Stock mÃ¡x alcanzado</span>
                   )}
                 </div>
 
@@ -234,7 +267,7 @@ export default function ProductoDetallePage() {
                       : 'bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white'
                   }`}
                 >
-                  {added ? '✓ Agregado al carrito' : product.stock - inCart <= 0 ? 'Ya tenés todo el stock' : 'Agregar al carrito'}
+                  {added ? 'âœ“ Agregado al carrito' : product.stock - inCart <= 0 ? 'Ya tenÃ©s todo el stock' : 'Agregar al carrito'}
                 </button>
               </div>
             )}
@@ -245,7 +278,7 @@ export default function ProductoDetallePage() {
                 target="_blank"
                 className="mt-6 block w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold text-center"
               >
-                💬 Consultar disponibilidad
+                ðŸ’¬ Consultar disponibilidad
               </a>
             )}
           </div>
@@ -254,7 +287,7 @@ export default function ProductoDetallePage() {
         {/* Relacionados */}
         {related.length > 0 && (
           <div className="mt-12">
-            <h2 className="font-serif text-2xl font-bold text-rose-900 mb-4">También te puede gustar</h2>
+            <h2 className="font-serif text-2xl font-bold text-rose-900 mb-4">TambiÃ©n te puede gustar</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {related.map(p => (
                 <Link key={p.id} href={`/producto/${p.id}`} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
@@ -262,7 +295,7 @@ export default function ProductoDetallePage() {
                     {p.images?.[0] ? (
                       <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl text-rose-200">📦</div>
+                      <div className="w-full h-full flex items-center justify-center text-5xl text-rose-200">ðŸ“¦</div>
                     )}
                   </div>
                   <div className="p-3">

@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useCartStore } from '@/lib/store';
+import { bestOfferText } from '@/lib/pricing';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -28,7 +29,7 @@ function CatalogoContent() {
 
   const loadData = async () => {
     const [prodResult, catResult] = await Promise.all([
-      supabase.from('products').select('*').eq('active', true).eq('show_online', true),
+      supabase.from('products').select('id, name, description, brand, category_id, barcode, sale_price, stock, min_stock, images, active, created_at, updated_at, tag, show_online, online_description, featured, online_gallery, variants, has_variants, quantity_offers, deleted_at, deleted_reason').eq('active', true).eq('show_online', true),
       supabase.from('categories').select('*').eq('active', true).order('display_order'),
     ]);
     setProducts(prodResult.data || []);
@@ -47,7 +48,9 @@ function CatalogoContent() {
       unit_price: product.sale_price,
       subtotal: product.sale_price,
       category_id: product.category_id,
-    });
+      quantity_offers: product.quantity_offers || [],
+      base_unit_price: product.sale_price,
+    } as any);
     setAdded(product.id);
     setTimeout(() => setAdded(null), 1500);
   };
@@ -156,6 +159,7 @@ function CatalogoContent() {
               const justAdded = added === product.id;
               const outOfStock = product.stock === 0;
               const lowStock = product.stock > 0 && product.stock <= 3;
+              const offerText = bestOfferText(product.sale_price, product.quantity_offers);
 
               return (
                 <div key={product.id} className="group bg-white border border-stone-200 hover:border-rose-300 rounded-xl overflow-hidden transition-all hover:shadow-elegant-lg">
@@ -180,7 +184,13 @@ function CatalogoContent() {
                         </div>
                       )}
 
-                      {lowStock && !outOfStock && (
+                      {offerText && !outOfStock && (
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-elegant">
+                          🏷️ Oferta
+                        </div>
+                      )}
+
+                      {lowStock && !outOfStock && !offerText && (
                         <div className="absolute top-2 right-2 bg-amber-100 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wider uppercase border border-amber-300">
                           Últimas {product.stock}
                         </div>
@@ -203,6 +213,11 @@ function CatalogoContent() {
                       <p className="font-sans font-bold text-lg text-rose-900 mt-2">
                         ${Number(product.sale_price).toLocaleString('es-AR')}
                       </p>
+                      {offerText && (
+                        <p className="text-[10px] text-amber-700 font-bold tracking-wider uppercase mt-1 bg-amber-50 border border-amber-200 rounded-sm px-2 py-1 inline-block">
+                          🏷️ {offerText}
+                        </p>
+                      )}
                     </div>
                   </Link>
 
